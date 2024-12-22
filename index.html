@@ -28,6 +28,11 @@
             flex-wrap: wrap;
             gap: 10px;
         }
+        .colorBoxContainer {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
         .colorBox {
             width: 30px;
             height: 30px;
@@ -64,15 +69,43 @@
         let lastX = 0;
         let lastY = 0;
         const colorSet = new Set();
+        const drawnPixels = {}; // Tracks drawn pixels per color
 
         function addColorToList(color) {
             if (!colorSet.has(color)) {
                 colorSet.add(color);
+                drawnPixels[color] = 0; // Initialize pixel count
+
+                const container = document.createElement('div');
+                container.classList.add('colorBoxContainer');
+
                 const colorBox = document.createElement('div');
                 colorBox.classList.add('colorBox');
                 colorBox.style.backgroundColor = color;
-                selectedColors.appendChild(colorBox);
+
+                const pixelCount = document.createElement('span');
+                pixelCount.textContent = `0 pixels`;
+                pixelCount.id = `count-${color}`;
+
+                container.appendChild(colorBox);
+                container.appendChild(pixelCount);
+                selectedColors.appendChild(container);
             }
+        }
+
+        function updatePixelCount(color, newPixels) {
+            drawnPixels[color] += newPixels;
+            const pixelCount = document.getElementById(`count-${color}`);
+            pixelCount.textContent = `${drawnPixels[color]} pixels`;
+        }
+
+        function calculateDrawnPixels(x, y, brushSize) {
+            const radius = brushSize / 2;
+            const startX = Math.max(0, Math.floor(x - radius));
+            const startY = Math.max(0, Math.floor(y - radius));
+            const endX = Math.min(canvas.width, Math.ceil(x + radius));
+            const endY = Math.min(canvas.height, Math.ceil(y + radius));
+            return (endX - startX) * (endY - startY);
         }
 
         imageUpload.addEventListener('change', (event) => {
@@ -120,9 +153,14 @@
             brushPreview.style.display = 'block';
 
             if (drawing) {
-                const currentColor = hexToRgba(colorPicker.value, alphaPicker.value);
+                const currentColor = colorPicker.value;
                 addColorToList(currentColor);
 
+                const newPixels = calculateDrawnPixels(x, y, brushSize.value);
+                updatePixelCount(currentColor, newPixels);
+
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.globalAlpha = parseFloat(alphaPicker.value);
                 ctx.strokeStyle = currentColor;
                 ctx.lineWidth = brushSize.value;
                 ctx.lineCap = 'round';
