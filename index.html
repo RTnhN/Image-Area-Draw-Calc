@@ -56,6 +56,7 @@
     </div>
     <canvas id="drawingCanvas"></canvas>
     <div id="brushPreview"></div>
+    <div id="description" style="display:none">Each column header color represents the base color. The rows then represent the color percentage relative to that base color.</div>
     <table id="colorMatrix"></table>
 
     <script>
@@ -67,6 +68,7 @@
         const ctx = canvas.getContext('2d');
         const colorMatrix = document.getElementById('colorMatrix');
         const brushPreview = document.getElementById('brushPreview');
+        const description = document.getElementById('description');
 
         const colorCanvases = {}; // Tracks off-screen canvases for each color
 
@@ -100,7 +102,8 @@
                 colorCanvas.width = canvas.width;
                 colorCanvas.height = canvas.height;
                 colorCanvases[color] = colorCanvas.getContext('2d');
-
+                description.style.display = 'block';
+                
                 updateColorMatrix();
             }
         }
@@ -108,9 +111,10 @@
         function updatePixelCount(color, newPixels) {
             drawnPixels[color] += newPixels;
             colorSet.forEach(existingColor => {
-                const relativePixels = Math.round((drawnPixels[color] / drawnPixels[existingColor]) * 100 || 0);
-                colorComparison[color][existingColor] = relativePixels;
-                colorComparison[existingColor][color] = relativePixels;
+                const relativePixels1 = Math.round((drawnPixels[color] / drawnPixels[existingColor]) * 100 || 0);
+                const relativePixels2 = Math.round((drawnPixels[existingColor] / drawnPixels[color]) * 100 || 0);
+                colorComparison[color][existingColor] = relativePixels1;
+                colorComparison[existingColor][color] = relativePixels2;
             });
             updateColorMatrix();
         }
