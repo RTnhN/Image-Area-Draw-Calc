@@ -31,6 +31,8 @@
         <input type="color" id="colorPicker" value="#000000">
         <label for="alphaPicker">Opacity: </label>
         <input type="range" id="alphaPicker" min="0" max="1" step="0.1" value="1">
+        <label for="brushSize">Brush Size: </label>
+        <input type="range" id="brushSize" min="1" max="50" step="1" value="5">
     </div>
     <canvas id="drawingCanvas"></canvas>
 
@@ -38,6 +40,7 @@
         const imageUpload = document.getElementById('imageUpload');
         const colorPicker = document.getElementById('colorPicker');
         const alphaPicker = document.getElementById('alphaPicker');
+        const brushSize = document.getElementById('brushSize');
         const canvas = document.getElementById('drawingCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -79,7 +82,7 @@
                 const x = event.clientX - rect.left;
                 const y = event.clientY - rect.top;
                 ctx.strokeStyle = hexToRgba(colorPicker.value, alphaPicker.value);
-                ctx.lineWidth = 5;
+                ctx.lineWidth = brushSize.value;
                 ctx.lineCap = 'round';
                 ctx.beginPath();
                 ctx.moveTo(lastX, lastY);
