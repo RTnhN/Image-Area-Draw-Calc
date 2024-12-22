@@ -17,6 +17,7 @@
             margin-top: 20px;
             max-width: 100%;
             max-height: 80vh;
+            cursor: none;
         }
         .controls {
             margin-top: 10px;
@@ -35,6 +36,7 @@
         <input type="range" id="brushSize" min="1" max="50" step="1" value="5">
     </div>
     <canvas id="drawingCanvas"></canvas>
+    <div id="brushPreview" style="position: absolute; pointer-events: none; border: 1px solid black; border-radius: 50%; transform: translate(-50%, -50%); display: none;"></div>
 
     <script>
         const imageUpload = document.getElementById('imageUpload');
@@ -43,6 +45,7 @@
         const brushSize = document.getElementById('brushSize');
         const canvas = document.getElementById('drawingCanvas');
         const ctx = canvas.getContext('2d');
+        const brushPreview = document.getElementById('brushPreview');
 
         let drawing = false;
         let lastX = 0;
@@ -69,18 +72,30 @@
         canvas.addEventListener('mousedown', (event) => {
             drawing = true;
             const rect = canvas.getBoundingClientRect();
-            lastX = event.clientX - rect.left;
-            lastY = event.clientY - rect.top;
+            lastX = (event.clientX - rect.left) * (canvas.width / rect.width);
+            lastY = (event.clientY - rect.top) * (canvas.height / rect.height);
         });
 
         canvas.addEventListener('mouseup', () => drawing = false);
-        canvas.addEventListener('mouseout', () => drawing = false);
+        canvas.addEventListener('mouseout', () => {
+            drawing = false;
+            brushPreview.style.display = 'none';
+        });
 
         canvas.addEventListener('mousemove', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = (event.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (event.clientY - rect.top) * (canvas.height / rect.height);
+
+            brushPreview.style.width = `${brushSize.value}px`;
+            brushPreview.style.height = `${brushSize.value}px`;
+            brushPreview.style.backgroundColor = hexToRgba(colorPicker.value, alphaPicker.value);
+            brushPreview.style.left = `${event.clientX}px`;
+            brushPreview.style.top = `${event.clientY}px`;
+            brushPreview.style.transform = `translate(-50%, -50%)`;
+            brushPreview.style.display = 'block';
+
             if (drawing) {
-                const rect = canvas.getBoundingClientRect();
-                const x = event.clientX - rect.left;
-                const y = event.clientY - rect.top;
                 ctx.strokeStyle = hexToRgba(colorPicker.value, alphaPicker.value);
                 ctx.lineWidth = brushSize.value;
                 ctx.lineCap = 'round';
